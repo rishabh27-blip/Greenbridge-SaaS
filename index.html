@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GreenBridge — Compliance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#1c2128;
+  --surface3:#21262d;
+  --border:#30363d;
+  --border2:#484f58;
+  --text:#e6edf3;
+  --text2:#8b949e;
+  --text3:#6e7681;
+  --green:#2ea043;
+  --green-light:#3fb950;
+  --green-dim:rgba(46,160,67,.15);
+  --amber:#d29922;
+  --amber-dim:rgba(210,153,34,.15);
+  --red:#f85149;
+  --red-dim:rgba(248,81,73,.15);
+  --blue:#58a6ff;
+  --blue-dim:rgba(88,166,255,.12);
+  --purple:#bc8cff;
+  --radius:10px;
+  --radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* Sidebar */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-logo{
+  padding:18px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#238636,#1a7f37);
+  display:grid;place-items:center;
+  font-weight:700;font-size:13px;color:#fff;
+  flex-shrink:0;
+}
+.logo-text{font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:var(--radius-sm);
+  cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;
+  transition:.15s ease;text-decoration:none;
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-item:hover{background:var(--surface3);color:var(--text)}
+.nav-item.active{background:var(--green-dim);color:var(--green-light)}
+.nav-item i{width:16px;text-align:center;font-size:13px}
+.nav-section{
+  font-size:10px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:10px 10px 4px;margin-top:4px;
+}
+.sidebar-footer{
+  padding:12px 16px;border-top:1px solid var(--border);
+  font-size:11px;color:var(--text3);
+}
+
+/* Main */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.topbar{
+  height:52px;flex-shrink:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;gap:16px;
+}
+.topbar-title{font-weight:600;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{flex:1;overflow-y:auto;padding:20px}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 14px;border-radius:var(--radius-sm);
+  font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;border:1px solid transparent;
+  transition:.15s ease;text-decoration:none;
+}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:#2ea043cc}
+.btn-surface{background:var(--surface3);color:var(--text);border-color:var(--border)}
+.btn-surface:hover{border-color:var(--border2);background:var(--surface2)}
+.btn-danger{background:var(--red-dim);color:var(--red);border-color:rgba(248,81,73,.3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* Cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+}
+.card-title{font-weight:600;font-size:13px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.stat-val{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;font-family:'DM Mono',monospace}
+.stat-sub{font-size:11px;color:var(--text3)}
+.stat-green .stat-val{color:var(--green-light)}
+.stat-amber .stat-val{color:var(--amber)}
+.stat-red .stat-val{color:var(--red)}
+.stat-blue .stat-val{color:var(--blue)}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  font-size:11px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+td{
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  font-size:13px;color:var(--text);
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* Badges */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 8px;border-radius:999px;
+  font-size:11px;font-weight:600;
+}
+.badge-green{background:var(--green-dim);color:var(--green-light)}
+.badge-amber{background:var(--amber-dim);color:var(--amber)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-gray{background:var(--surface3);color:var(--text2)}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{
+  background:var(--surface3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:8px 10px;
+  color:var(--text);font-family:inherit;font-size:13px;
+  outline:none;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
+select option{background:var(--surface3)}
+textarea{min-height:80px;resize:vertical}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:flex;align-items:center;justify-content:center;
+  z-index:100;padding:20px;
+  opacity:0;pointer-events:none;transition:.2s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;
+  width:100%;max-width:560px;max-height:90vh;overflow-y:auto;
+  transform:translateY(8px);transition:.2s ease;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-weight:700;font-size:16px}
+.modal-close{
+  background:none;border:none;color:var(--text3);
+  cursor:pointer;font-size:18px;padding:4px;
+  border-radius:4px;
+}
+.modal-close:hover{color:var(--text);background:var(--surface3)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* Alert */
+.alert{
+  padding:10px 14px;border-radius:var(--radius-sm);
+  font-size:13px;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.alert-amber{background:var(--amber-dim);border:1px solid rgba(210,153,34,.3);color:var(--amber)}
+.alert-red{background:var(--red-dim);border:1px solid rgba(248,81,73,.3);color:var(--red)}
+.alert-green{background:var(--green-dim);border:1px solid rgba(46,160,67,.3);color:var(--green-light)}
+
+/* Progress */
+.progress-bar{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:.3s ease}
+
+/* Timeline/logbook */
+.log-entry{
+  display:flex;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+.log-entry:last-child{border-bottom:none}
+.log-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);flex-shrink:0;margin-top:5px;
+}
+.log-dot.amber{background:var(--amber)}
+.log-dot.red{background:var(--red)}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{
+  padding:8px 14px;cursor:pointer;font-size:13px;font-weight:500;
+  color:var(--text3);border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:.15s ease;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:inherit;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--green-light);border-bottom-color:var(--green-light)}
+
+/* Empty state */
+.empty{
+  text-align:center;padding:48px 20px;color:var(--text3);
+}
+.empty i{font-size:32px;margin-bottom:12px;display:block}
+.empty p{font-size:13px;margin-top:4px}
+
+/* Deadline row */
+.deadline-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.deadline-item:last-child{border-bottom:none}
+.deadline-days{
+  width:52px;height:52px;border-radius:var(--radius-sm);
+  display:grid;place-items:center;flex-shrink:0;
+  font-family:'DM Mono',monospace;
+}
+.days-num{font-size:18px;font-weight:700;line-height:1}
+.days-label{font-size:9px;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+/* Grid layouts */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* Page sections */
+.page{display:none}
+.page.active{display:block}
+
+/* Document card */
+.doc-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--surface2);
+  margin-bottom:8px;
+}
+.doc-icon{
+  width:34px;height:34px;border-radius:6px;
+  background:var(--blue-dim);color:var(--blue);
+  display:grid;place-items:center;flex-shrink:0;font-size:14px;
+}
+.doc-name{font-size:13px;font-weight:500;flex:1}
+.doc-date{font-size:11px;color:var(--text3)}
+
+/* Notification dot */
+.notif{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-size:10px;font-weight:700;
+  display:grid;place-items:center;flex-shrink:0;
+}
+
+/* Search */
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap input{padding-left:30px}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px}
+
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .logo-text,.logo-sub,.nav-item span,.nav-section,.sidebar-footer{display:none}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .two-col,.three-col{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">GB</div>
+      <div>
+        <div class="logo-text">GreenBridge</div>
+        <div class="logo-sub">Compliance SaaS</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('dashboard')">
+        <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+      </button>
+      <button class="nav-item" onclick="showPage('clients')">
+        <i class="fa-solid fa-industry"></i><span>Clients</span>
+      </button>
+      <div class="nav-section">Compliance</div>
+      <button class="nav-item" onclick="showPage('deadlines')">
+        <i class="fa-solid fa-calendar-days"></i><span>Deadlines</span>
+      </button>
+      <button class="nav-item" onclick="showPage('logbook')">
+        <i class="fa-solid fa-book"></i><span>ETP Logbook</span>
+      </button>
+      <button class="nav-item" onclick="showPage('documents')">
+        <i class="fa-solid fa-folder-open"></i><span>Documents</span>
+      </button>
+      <div class="nav-section">Reports</div>
+      <button class="nav-item" onclick="showPage('reminders')">
+        <i class="fa-solid fa-bell"></i><span>Reminders</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">v1.0 &bull; Punjab</div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <i class="fa-solid fa-search search-icon"></i>
+          <input type="text" placeholder="Search clients..." id="search-input" oninput="filterClients()">
+        </div>
+        <button class="btn btn-green btn-sm" onclick="openModal('add-client-modal')">
+          <i class="fa-solid fa-plus"></i> Add Client
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div id="alerts-container"></div>
+
+        <div class="stats-grid" id="stats-grid">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i> Expiring Soon</div>
+            <div id="expiring-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--blue)"></i> Recent Activity</div>
+            <div id="activity-list"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-bar" style="color:var(--purple)"></i> Client Status Overview</div>
+          <div id="status-overview"></div>
+        </div>
+      </div>
+
+      <!-- CLIENTS PAGE -->
+      <div class="page" id="page-clients">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:13px;color:var(--text3)" id="client-count-label"></div>
+          <div style="display:flex;gap:8px">
+            <select id="filter-cat" onchange="filterClients()" style="width:auto;padding:6px 10px;font-size:12px">
+              <option value="">All Categories</option>
+              <option value="RED">RED</option>
+              <option value="ORANGE">ORANGE</option>
+              <option value="GREEN">GREEN</option>
+            </select>
+            <select id="filter-status" onchange="filterClients()" style="width:auto;padding:6px 10px;font-size:12px">
+              <option value="">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+              <option value="rejected">Rejected</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Factory Name</th>
+                  <th>Industry Type</th>
+                  <th>Category</th>
+                  <th>CTO Status</th>
+                  <th>Expiry Date</th>
+                  <th>Days Left</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEADLINES PAGE -->
+      <div class="page" id="page-deadlines">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-fire" style="color:var(--red)"></i> Critical — Next 30 Days</div>
+            <div id="deadlines-critical"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-clock" style="color:var(--amber)"></i> Upcoming — 31–90 Days</div>
+            <div id="deadlines-upcoming"></div>
+          </div>
+        </div>
+        <div style="margin-top:12px" class="card">
+          <div class="card-title"><i class="fa-solid fa-calendar" style="color:var(--blue)"></i> PPCB Annual Deadlines</div>
+          <div id="ppcb-annual-deadlines"></div>
+        </div>
+      </div>
+
+      <!-- ETP LOGBOOK PAGE -->
+      <div class="page" id="page-logbook">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div>
+            <select id="logbook-client-select" onchange="renderLogbook()" style="width:auto;padding:7px 12px;">
+              <option value="">Select a client...</option>
+            </select>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="openLogEntryModal()">
+            <i class="fa-solid fa-plus"></i> Add Monthly Entry
+          </button>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-flask" style="color:var(--green-light)"></i> ETP Readings Log</div>
+            <div id="logbook-entries"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-info-circle" style="color:var(--blue)"></i> Parameters Guide</div>
+            <div style="font-size:12px;color:var(--text2);display:grid;gap:8px">
+              <div><strong style="color:var(--text)">pH:</strong> Acceptable range 6.5–8.5 for most industries</div>
+              <div><strong style="color:var(--text)">BOD:</strong> Biochemical Oxygen Demand — max 30 mg/L for discharge</div>
+              <div><strong style="color:var(--text)">COD:</strong> Chemical Oxygen Demand — max 250 mg/L</div>
+              <div><strong style="color:var(--text)">TSS:</strong> Total Suspended Solids — max 100 mg/L</div>
+              <div><strong style="color:var(--text)">TDS:</strong> Total Dissolved Solids — max 2100 mg/L</div>
+              <div style="margin-top:8px;padding:8px;background:var(--amber-dim);border-radius:6px;color:var(--amber)">
+                <i class="fa-solid fa-triangle-exclamation"></i> Red category units must maintain daily records
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS PAGE -->
+      <div class="page" id="page-documents">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <select id="doc-client-select" onchange="renderDocuments()" style="width:auto;padding:7px 12px;">
+            <option value="">Select a client...</option>
+          </select>
+          <button class="btn btn-green btn-sm" onclick="openDocModal()">
+            <i class="fa-solid fa-upload"></i> Add Document
+          </button>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-folder" style="color:var(--amber)"></i> Uploaded Documents</div>
+            <div id="doc-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-list-check" style="color:var(--green-light)"></i> PPCB Required Documents Checklist</div>
+            <div style="display:grid;gap:6px;font-size:12px" id="doc-checklist"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMINDERS PAGE -->
+      <div class="page" id="page-reminders">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title"><i class="fa-solid fa-bell" style="color:var(--amber)"></i> Active Reminders</div>
+          <div id="reminders-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-whatsapp" style="color:var(--green-light)"></i> Send WhatsApp Reminder</div>
+          <div style="display:grid;gap:10px;max-width:400px">
+            <div class="form-group">
+              <label>Select Client</label>
+              <select id="wa-client-select"></select>
+            </div>
+            <div class="form-group">
+              <label>Reminder Type</label>
+              <select id="wa-type">
+                <option>CTO Renewal Due in 30 Days</option>
+                <option>CTO Renewal Due in 60 Days</option>
+                <option>Monthly ETP Records Due</option>
+                <option>PPCB Inspection Scheduled</option>
+                <option>Document Submission Pending</option>
+              </select>
+            </div>
+            <button class="btn btn-green" onclick="sendWhatsApp()">
+              <i class="fa-brands fa-whatsapp"></i> Send WhatsApp Message
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </div><!-- end main -->
+</div><!-- end app -->
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="add-client-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Client</div>
+      <button class="modal-close" onclick="closeModal('add-client-modal')">&times;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Factory / Industry Name *</label>
+        <input id="f-name" placeholder="e.g. Durga Rice and General Mills" required/>
+      </div>
+      <div class="form-group full">
+        <label>Address</label>
+        <input id="f-address" placeholder="G T Road, Jagraon, Ludhiana"/>
+      </div>
+      <div class="form-group">
+        <label>Industry Type *</label>
+        <select id="f-type">
+          <option value="Rice Mill">Rice Mill</option>
+          <option value="Dyeing / Textile">Dyeing / Textile</option>
+          <option value="Hosiery / Garment">Hosiery / Garment</option>
+          <option value="Vegetable Oil / Food">Vegetable Oil / Food</option>
+          <option value="Metal / Electroplating">Metal / Electroplating</option>
+          <option value="Rubber / Manufacturing">Rubber / Manufacturing</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>PPCB Category *</label>
+        <select id="f-cat">
+          <option value="ORANGE">ORANGE</option>
+          <option value="RED">RED</option>
+          <option value="GREEN">GREEN</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CTO Status</label>
+        <select id="f-status">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CTO Expiry Date</label>
+        <input id="f-expiry" type="date"/>
+      </div>
+      <div class="form-group">
+        <label>Owner Name</label>
+        <input id="f-owner" placeholder="Owner / Contact person"/>
+      </div>
+      <div class="form-group">
+        <label>Phone / WhatsApp</label>
+        <input id="f-phone" placeholder="+91-XXXXXXXXXX"/>
+      </div>
+      <div class="form-group">
+        <label>Application No. (OCMMS)</label>
+        <input id="f-appno" placeholder="Optional"/>
+      </div>
+      <div class="form-group">
+        <label>Monthly Retainer (₹)</label>
+        <input id="f-retainer" type="number" placeholder="e.g. 6000"/>
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Rejection reasons, ETP status, special notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-surface" onclick="closeModal('add-client-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveClient()"><i class="fa-solid fa-save"></i> Save Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW CLIENT MODAL -->
+<div class="modal-overlay" id="view-client-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-title" id="view-modal-title">Client Details</div>
+      <button class="modal-close" onclick="closeModal('view-client-modal')">&times;</button>
+    </div>
+    <div id="view-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="view-delete-btn">Delete</button>
+      <button class="btn btn-surface" onclick="closeModal('view-client-modal')">Close</button>
+      <button class="btn btn-green" id="view-edit-btn"><i class="fa-solid fa-edit"></i> Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG ENTRY MODAL -->
+<div class="modal-overlay" id="log-entry-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add ETP Monthly Reading</div>
+      <button class="modal-close" onclick="closeModal('log-entry-modal')">&times;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Month / Year</label>
+        <input id="log-month" type="month"/>
+      </div>
+      <div class="form-group">
+        <label>pH Level</label>
+        <input id="log-ph" type="number" step="0.1" placeholder="6.5–8.5"/>
+      </div>
+      <div class="form-group">
+        <label>BOD (mg/L)</label>
+        <input id="log-bod" type="number" placeholder="max 30"/>
+      </div>
+      <div class="form-group">
+        <label>COD (mg/L)</label>
+        <input id="log-cod" type="number" placeholder="max 250"/>
+      </div>
+      <div class="form-group">
+        <label>TSS (mg/L)</label>
+        <input id="log-tss" type="number" placeholder="max 100"/>
+      </div>
+      <div class="form-group">
+        <label>TDS (mg/L)</label>
+        <input id="log-tds" type="number" placeholder="max 2100"/>
+      </div>
+      <div class="form-group full">
+        <label>ETP Operator Remarks</label>
+        <textarea id="log-remarks" placeholder="Any issues, maintenance done, observations..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-surface" onclick="closeModal('log-entry-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveLogEntry()"><i class="fa-solid fa-save"></i> Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOC MODAL -->
+<div class="modal-overlay" id="doc-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Document Record</div>
+      <button class="modal-close" onclick="closeModal('doc-modal')">&times;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Document Name *</label>
+        <input id="doc-name-input" placeholder="e.g. CTO Certificate 2024"/>
+      </div>
+      <div class="form-group">
+        <label>Document Type</label>
+        <select id="doc-type-input">
+          <option>CTO Certificate</option>
+          <option>ETP Completion Certificate</option>
+          <option>Coloured Site Plan</option>
+          <option>Lab Test Report</option>
+          <option>CA Certificate</option>
+          <option>NOC</option>
+          <option>Rejection Letter</option>
+          <option>Show Cause Notice</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input id="doc-date-input" type="date"/>
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <input id="doc-notes-input" placeholder="Optional notes"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-surface" onclick="closeModal('doc-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveDocument()"><i class="fa-solid fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA STORE ───────────────────────────────────────────────────
+let clients = [];
+let logEntries = {}; // clientId -> []
+let documents = {};  // clientId -> []
+let activity = [];
+
+const SAMPLE_CLIENTS = [
+  {id:'c1',name:'Durga Rice and General Mills',address:'G T Road, Jagraon, Ludhiana',type:'Rice Mill',cat:'ORANGE',status:'rejected',expiry:'2025-09-30',owner:'',phone:'',appno:'25237790',retainer:6000,notes:'Rejected 4 times in 2024. ETP absent.',created:Date.now()-86400000*5},
+  {id:'c2',name:'Laxmi Dyeing',address:'Mahivir Colony, Tajpur Road, Ludhiana',type:'Dyeing / Textile',cat:'RED',status:'rejected',expiry:'2025-03-31',owner:'',phone:'',appno:'',retainer:8000,notes:'Rejected in Dec 2024 and Mar 2025. Repeated rejections.',created:Date.now()-86400000*3},
+  {id:'c3',name:'MAHAVIR DYEING HOUSE',address:'Tajpur Road, Opp. Central Jail, Ludhiana',type:'Dyeing / Textile',cat:'ORANGE',status:'pending',expiry:'2025-09-30',owner:'',phone:'',appno:'',retainer:6000,notes:'Application pending. Site visit done.',created:Date.now()-86400000*2},
+  {id:'c4',name:'MANDALS & ASSOCIATES',address:'Bobby Colony, Hambran Road, Ludhiana',type:'Hosiery / Garment',cat:'ORANGE',status:'approved',expiry:'2027-09-30',owner:'',phone:'',appno:'',retainer:5000,notes:'Recently approved.',created:Date.now()-86400000*1},
+];
+
+function loadData(){
+  try{
+    const d = localStorage.getItem('gb_data');
+    if(d){
+      const p = JSON.parse(d);
+      clients = p.clients || SAMPLE_CLIENTS;
+      logEntries = p.logEntries || {};
+      documents = p.documents || {};
+      activity = p.activity || [];
+    } else {
+      clients = SAMPLE_CLIENTS;
+      activity = [{text:'Sample data loaded — add your real clients',time:Date.now(),type:'info'}];
+      saveData();
+    }
+  } catch(e){ clients = SAMPLE_CLIENTS; }
+}
+
+function saveData(){
+  localStorage.setItem('gb_data',JSON.stringify({clients,logEntries,documents,activity}));
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────
+function uid(){ return 'c'+Date.now()+Math.random().toString(36).slice(2,6) }
+
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const diff = new Date(dateStr) - new Date();
+  return Math.ceil(diff/(1000*60*60*24));
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function statusBadge(s){
+  const map = {approved:'badge-green',pending:'badge-amber',rejected:'badge-red',expired:'badge-gray'};
+  return `<span class="badge ${map[s]||'badge-gray'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+}
+
+function catBadge(c){
+  const map = {RED:'badge-red',ORANGE:'badge-amber',GREEN:'badge-green'};
+  return `<span class="badge ${map[c]||'badge-gray'}">${c}</span>`;
+}
+
+function daysColor(d){
+  if(d===null) return 'var(--text3)';
+  if(d<0) return 'var(--red)';
+  if(d<=30) return 'var(--red)';
+  if(d<=90) return 'var(--amber)';
+  return 'var(--green-light)';
+}
+
+function daysLabel(d){
+  if(d===null) return '—';
+  if(d<0) return `${Math.abs(d)}d overdue`;
+  if(d===0) return 'Today';
+  return `${d} days`;
+}
+
+function addActivity(text,type='info'){
+  activity.unshift({text,time:Date.now(),type});
+  if(activity.length>50) activity.pop();
+  saveData();
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes(name)) n.classList.add('active');
+  });
+  const titles={dashboard:'Dashboard',clients:'Clients',deadlines:'Deadlines',logbook:'ETP Logbook',documents:'Documents',reminders:'Reminders'};
+  document.getElementById('page-title').textContent = titles[name]||name;
+  if(name==='dashboard') renderDashboard();
+  if(name==='clients') renderClients();
+  if(name==='deadlines') renderDeadlines();
+  if(name==='logbook') renderLogbookSelects();
+  if(name==='documents') renderDocumentSelects();
+  if(name==='reminders') renderReminders();
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open') }
+function closeModal(id){ document.getElementById(id).classList.remove('open') }
+
+// ─── DASHBOARD ───────────────────────────────────────────────────
+function renderDashboard(){
+  const total = clients.length;
+  const approved = clients.filter(c=>c.status==='approved').length;
+  const rejected = clients.filter(c=>c.status==='rejected').length;
+  const pending = clients.filter(c=>c.status==='pending').length;
+  const expired = clients.filter(c=>c.status==='expired').length;
+  const totalRetainer = clients.reduce((s,c)=>s+(Number(c.retainer)||0),0);
+
+  // Alerts
+  const critical = clients.filter(c=>{const d=daysUntil(c.expiry);return d!==null&&d>=0&&d<=30&&c.status==='approved'});
+  let alertsHtml = '';
+  if(critical.length>0){
+    alertsHtml += `<div class="alert alert-red"><i class="fa-solid fa-fire"></i> <strong>${critical.length} client${critical.length>1?'s':''}</strong> have CTO expiring within 30 days — action needed immediately.</div>`;
+  }
+  if(rejected>0){
+    alertsHtml += `<div class="alert alert-amber"><i class="fa-solid fa-triangle-exclamation"></i> <strong>${rejected} client${rejected>1?'s':''}</strong> have rejected applications — follow up required.</div>`;
+  }
+  if(total===0){
+    alertsHtml += `<div class="alert alert-green"><i class="fa-solid fa-info-circle"></i> Welcome to GreenBridge SaaS. Add your first client to get started.</div>`;
+  }
+  document.getElementById('alerts-container').innerHTML = alertsHtml;
+
+  // Stats
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card stat-blue"><div class="stat-label">Total Clients</div><div class="stat-val">${total}</div><div class="stat-sub">Active portfolio</div></div>
+    <div class="stat-card stat-green"><div class="stat-label">Approved</div><div class="stat-val">${approved}</div><div class="stat-sub">${total?Math.round(approved/total*100):0}% approval rate</div></div>
+    <div class="stat-card stat-amber"><div class="stat-label">Pending / Rejected</div><div class="stat-val">${pending+rejected}</div><div class="stat-sub">${pending} pending, ${rejected} rejected</div></div>
+    <div class="stat-card stat-green"><div class="stat-label">Monthly Retainer</div><div class="stat-val">₹${(totalRetainer/1000).toFixed(1)}K</div><div class="stat-sub">Recurring income</div></div>
+  `;
+
+  // Expiring soon
+  const expiring = clients
+    .filter(c=>c.status==='approved'&&c.expiry)
+    .map(c=>({...c,d:daysUntil(c.expiry)}))
+    .filter(c=>c.d<=90)
+    .sort((a,b)=>a.d-b.d)
+    .slice(0,5);
+  let expiringHtml = expiring.length ? '' : '<div class="empty"><i class="fa-solid fa-circle-check"></i><div>No upcoming expirations</div></div>';
+  expiring.forEach(c=>{
+    expiringHtml += `<div class="deadline-item">
+      <div class="deadline-days" style="background:${c.d<=30?'var(--red-dim)':'var(--amber-dim)'}">
+        <div class="days-num" style="color:${daysColor(c.d)}">${c.d}</div>
+        <div class="days-label" style="color:${daysColor(c.d)}">days</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:500;font-size:13px">${c.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${c.type} &bull; ${fmtDate(c.expiry)}</div>
+      </div>
+      ${catBadge(c.cat)}
+    </div>`;
+  });
+  document.getElementById('expiring-list').innerHTML = expiringHtml;
+
+  // Activity
+  let actHtml = activity.length ? '' : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">No activity yet</div>';
+  activity.slice(0,8).forEach(a=>{
+    const col = a.type==='success'?'var(--green-light)':a.type==='warning'?'var(--amber)':a.type==='error'?'var(--red)':'var(--blue)';
+    actHtml += `<div class="log-entry">
+      <div class="log-dot" style="background:${col}"></div>
+      <div><div style="font-size:12px">${a.text}</div><div style="font-size:11px;color:var(--text3)">${new Date(a.time).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'})}</div></div>
+    </div>`;
+  });
+  document.getElementById('activity-list').innerHTML = actHtml;
+
+  // Status overview
+  const types = ['approved','pending','rejected','expired'];
+  const colors = {'approved':'var(--green-light)','pending':'var(--amber)','rejected':'var(--red)','expired':'var(--text3)'};
+  let ovHtml = '<div style="display:grid;gap:8px">';
+  types.forEach(t=>{
+    const count = clients.filter(c=>c.status===t).length;
+    const pct = total ? Math.round(count/total*100) : 0;
+    ovHtml += `<div style="display:flex;align-items:center;gap:10px">
+      <div style="width:80px;font-size:12px;color:var(--text2);text-transform:capitalize">${t}</div>
+      <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${pct}%;background:${colors[t]}"></div></div>
+      <div style="font-family:'DM Mono';font-size:12px;color:${colors[t]};width:40px;text-align:right">${count}</div>
+    </div>`;
+  });
+  ovHtml += '</div>';
+  document.getElementById('status-overview').innerHTML = ovHtml;
+}
+
+// ─── CLIENTS ─────────────────────────────────────────────────────
+function getFilteredClients(){
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  const cat = document.getElementById('filter-cat')?.value||'';
+  const status = document.getElementById('filter-status')?.value||'';
+  return clients.filter(c=>{
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q) || c.type.toLowerCase().includes(q);
+    const matchCat = !cat || c.cat===cat;
+    const matchStatus = !status || c.status===status;
+    return matchQ && matchCat && matchStatus;
+  });
+}
+
+function filterClients(){ renderClients() }
+
+function renderClients(){
+  const filtered = getFilteredClients();
+  document.getElementById('client-count-label').textContent = `${filtered.length} of ${clients.length} clients`;
+  let html = '';
+  if(filtered.length===0){
+    html = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">No clients found. Add your first client using the button above.</td></tr>';
+  }
+  filtered.forEach(c=>{
+    const d = daysUntil(c.expiry);
+    html += `<tr>
+      <td><div style="font-weight:500">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.address||'—'}</div></td>
+      <td><span style="font-size:12px;color:var(--text2)">${c.type}</span></td>
+      <td>${catBadge(c.cat)}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td style="font-size:12px">${fmtDate(c.expiry)}</td>
+      <td><span style="font-family:'DM Mono';font-size:12px;color:${daysColor(d)}">${daysLabel(d)}</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-surface btn-sm" onclick="viewClient('${c.id}')"><i class="fa-solid fa-eye"></i></button>
+          <button class="btn btn-surface btn-sm" onclick="openWhatsApp('${c.id}')"><i class="fa-brands fa-whatsapp"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('clients-table-body').innerHTML = html;
+}
+
+function viewClient(id){
+  const c = clients.find(x=>x.id===id);
+  if(!c) return;
+  const d = daysUntil(c.expiry);
+  document.getElementById('view-modal-title').textContent = c.name;
+  document.getElementById('view-modal-body').innerHTML = `
+    <div style="display:grid;gap:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${catBadge(c.cat)} ${statusBadge(c.status)}</div>
+      <div class="two-col" style="gap:10px">
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Industry Type</div><div style="font-size:13px;margin-top:3px">${c.type}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Monthly Retainer</div><div style="font-size:13px;margin-top:3px;font-family:'DM Mono'">₹${Number(c.retainer||0).toLocaleString()}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">CTO Expiry</div><div style="font-size:13px;margin-top:3px">${fmtDate(c.expiry)}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Days Left</div><div style="font-size:13px;margin-top:3px;font-family:'DM Mono';color:${daysColor(d)}">${daysLabel(d)}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Owner</div><div style="font-size:13px;margin-top:3px">${c.owner||'—'}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Phone</div><div style="font-size:13px;margin-top:3px">${c.phone||'—'}</div></div>
+        <div style="grid-column:1/-1"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Address</div><div style="font-size:13px;margin-top:3px">${c.address||'—'}</div></div>
+        ${c.appno?`<div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">OCMMS App No.</div><div style="font-size:13px;font-family:'DM Mono';margin-top:3px">${c.appno}</div></div>`:''}
+      </div>
+      ${c.notes?`<div style="padding:10px;background:var(--surface3);border-radius:6px;font-size:13px;color:var(--text2)">${c.notes}</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-surface btn-sm" onclick="closeModal('view-client-modal');showPage('logbook');setTimeout(()=>{document.getElementById('logbook-client-select').value='${c.id}';renderLogbook()},100)"><i class="fa-solid fa-book"></i> View Logbook</button>
+        <button class="btn btn-surface btn-sm" onclick="closeModal('view-client-modal');showPage('documents');setTimeout(()=>{document.getElementById('doc-client-select').value='${c.id}';renderDocuments()},100)"><i class="fa-solid fa-folder"></i> Documents</button>
+        <button class="btn btn-surface btn-sm" onclick="openWhatsApp('${c.id}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+      </div>
+    </div>`;
+  document.getElementById('view-delete-btn').onclick = ()=>deleteClient(id);
+  document.getElementById('view-edit-btn').onclick = ()=>{ closeModal('view-client-modal'); editClient(id); };
+  openModal('view-client-modal');
+}
+
+function editClient(id){
+  const c = clients.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-address').value = c.address||'';
+  document.getElementById('f-type').value = c.type;
+  document.getElementById('f-cat').value = c.cat;
+  document.getElementById('f-status').value = c.status;
+  document.getElementById('f-expiry').value = c.expiry||'';
+  document.getElementById('f-owner').value = c.owner||'';
+  document.getElementById('f-phone').value = c.phone||'';
+  document.getElementById('f-appno').value = c.appno||'';
+  document.getElementById('f-retainer').value = c.retainer||'';
+  document.getElementById('f-notes').value = c.notes||'';
+  // Change save button to update
+  const btn = document.querySelector('#add-client-modal .btn-green');
+  btn.onclick = ()=>updateClient(id);
+  btn.innerHTML = '<i class="fa-solid fa-save"></i> Update Client';
+  openModal('add-client-modal');
+}
+
+function saveClient(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){ alert('Factory name is required'); return; }
+  const c = {
+    id: uid(),
+    name, address: document.getElementById('f-address').value.trim(),
+    type: document.getElementById('f-type').value,
+    cat: document.getElementById('f-cat').value,
+    status: document.getElementById('f-status').value,
+    expiry: document.getElementById('f-expiry').value,
+    owner: document.getElementById('f-owner').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    appno: document.getElementById('f-appno').value.trim(),
+    retainer: document.getElementById('f-retainer').value,
+    notes: document.getElementById('f-notes').value.trim(),
+    created: Date.now()
+  };
+  clients.unshift(c);
+  addActivity(`New client added: ${name}`,'success');
+  saveData();
+  closeModal('add-client-modal');
+  clearClientForm();
+  renderClients();
+  renderDashboard();
+}
+
+function updateClient(id){
+  const idx = clients.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){ alert('Factory name is required'); return; }
+  clients[idx] = {...clients[idx],
+    name, address: document.getElementById('f-address').value.trim(),
+    type: document.getElementById('f-type').value,
+    cat: document.getElementById('f-cat').value,
+    status: document.getElementById('f-status').value,
+    expiry: document.getElementById('f-expiry').value,
+    owner: document.getElementById('f-owner').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    appno: document.getElementById('f-appno').value.trim(),
+    retainer: document.getElementById('f-retainer').value,
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  addActivity(`Client updated: ${name}`,'info');
+  saveData();
+  closeModal('add-client-modal');
+  clearClientForm();
+  // reset save button
+  const btn = document.querySelector('#add-client-modal .btn-green');
+  btn.onclick = saveClient;
+  btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Client';
+  renderClients();
+  renderDashboard();
+}
+
+function deleteClient(id){
+  if(!confirm('Delete this client? This cannot be undone.')) return;
+  const c = clients.find(x=>x.id===id);
+  clients = clients.filter(x=>x.id!==id);
+  if(c) addActivity(`Client removed: ${c.name}`,'warning');
+  saveData();
+  closeModal('view-client-modal');
+  renderClients();
+  renderDashboard();
+}
+
+function clearClientForm(){
+  ['f-name','f-address','f-owner','f-phone','f-appno','f-retainer','f-notes','f-expiry'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('f-type').value='Rice Mill';
+  document.getElementById('f-cat').value='ORANGE';
+  document.getElementById('f-status').value='pending';
+}
+
+function openWhatsApp(id){
+  const c = clients.find(x=>x.id===id);
+  if(!c||!c.phone){ alert('No phone number saved for this client. Edit the client to add a phone number.'); return; }
+  const phone = c.phone.replace(/[^0-9]/g,'');
+  const d = daysUntil(c.expiry);
+  const msg = `Hello, this is GreenBridge Consultants. Regarding your PPCB CTO compliance for ${c.name} — ${d!==null&&d>0?`your consent expires in ${d} days (${fmtDate(c.expiry)}).`:`your application status is ${c.status}.`} Please contact us to ensure timely renewal. Call: +91-7814818513`;
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ─── DEADLINES ───────────────────────────────────────────────────
+function renderDeadlines(){
+  const withExpiry = clients.filter(c=>c.expiry).map(c=>({...c,d:daysUntil(c.expiry)}));
+  const critical = withExpiry.filter(c=>c.d<=30).sort((a,b)=>a.d-b.d);
+  const upcoming = withExpiry.filter(c=>c.d>30&&c.d<=90).sort((a,b)=>a.d-b.d);
+
+  const buildDeadlineList = (arr,emptyMsg)=>{
+    if(!arr.length) return `<div class="empty"><i class="fa-solid fa-calendar-check"></i><div>${emptyMsg}</div></div>`;
+    return arr.map(c=>`
+      <div class="deadline-item">
+        <div class="deadline-days" style="background:${c.d<=30?'var(--red-dim)':'var(--amber-dim)'}">
+          <div class="days-num" style="color:${daysColor(c.d)}">${c.d<0?Math.abs(c.d):c.d}</div>
+          <div class="days-label" style="color:${daysColor(c.d)}">${c.d<0?'overdue':'days'}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:13px">${c.name}</div>
+          <div style="font-size:11px;color:var(--text3)">${c.type} &bull; Expires ${fmtDate(c.expiry)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          ${catBadge(c.cat)}
+          ${c.phone?`<button class="btn btn-surface btn-sm" onclick="openWhatsApp('${c.id}')"><i class="fa-brands fa-whatsapp"></i></button>`:''}
+        </div>
+      </div>`).join('');
+  };
+
+  document.getElementById('deadlines-critical').innerHTML = buildDeadlineList(critical,'No critical deadlines — all good!');
+  document.getElementById('deadlines-upcoming').innerHTML = buildDeadlineList(upcoming,'No upcoming deadlines in 31–90 days');
+
+  // PPCB Annual deadlines
+  const annualDeadlines = [
+    {name:'Large & Medium RED Category — CTO Culmination',date:'31 March',note:'Annual renewal deadline for large/medium RED industries'},
+    {name:'SSI-RED Category (excl. Brick Kilns) — CTO Culmination',date:'30 June',note:'Small-scale RED industries'},
+    {name:'All ORANGE Category + Brick Kilns — CTO Culmination',date:'30 September',note:'Includes rice mills, dyeing, hosiery units'},
+    {name:'All GREEN Category — CTO Culmination',date:'31 December',note:'Green category industries'},
+  ];
+  let annualHtml = '<div style="display:grid;gap:0">';
+  annualDeadlines.forEach(a=>{
+    annualHtml += `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:80px;font-family:'DM Mono';font-size:13px;font-weight:600;color:var(--amber);flex-shrink:0">${a.date}</div>
+      <div><div style="font-size:13px;font-weight:500">${a.name}</div><div style="font-size:11px;color:var(--text3)">${a.note}</div></div>
+    </div>`;
+  });
+  annualHtml += '</div>';
+  document.getElementById('ppcb-annual-deadlines').innerHTML = annualHtml;
+}
+
+// ─── LOGBOOK ─────────────────────────────────────────────────────
+function renderLogbookSelects(){
+  populateSelect('logbook-client-select');
+  renderLogbook();
+}
+
+function populateSelect(selectId, placeholder='Select a client...'){
+  const sel = document.getElementById(selectId);
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${placeholder}</option>` + clients.map(c=>`<option value="${c.id}" ${c.id===cur?'selected':''}>${c.name}</option>`).join('');
+}
+
+function renderLogbook(){
+  const cid = document.getElementById('logbook-client-select').value;
+  const entries = cid ? (logEntries[cid]||[]) : [];
+  if(!cid){
+    document.getElementById('logbook-entries').innerHTML = '<div class="empty"><i class="fa-solid fa-book"></i><p>Select a client to view their ETP logbook</p></div>';
+    return;
+  }
+  if(!entries.length){
+    document.getElementById('logbook-entries').innerHTML = '<div class="empty"><i class="fa-solid fa-plus-circle"></i><p>No entries yet. Add monthly readings above.</p></div>';
+    return;
+  }
+  let html = '';
+  [...entries].reverse().forEach(e=>{
+    const phOk = e.ph>=6.5&&e.ph<=8.5;
+    const bodOk = e.bod<=30;
+    const codOk = e.cod<=250;
+    const allOk = phOk&&bodOk&&codOk;
+    html += `<div class="log-entry">
+      <div class="log-dot ${allOk?'':'amber'}"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:600;font-size:13px">${e.month}</div>
+          <span class="badge ${allOk?'badge-green':'badge-amber'}">${allOk?'Compliant':'Review Needed'}</span>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+          ${e.ph?`<div style="font-size:11px"><span style="color:var(--text3)">pH</span> <span style="font-family:'DM Mono';color:${phOk?'var(--green-light)':'var(--red)'}">${e.ph}</span></div>`:''}
+          ${e.bod?`<div style="font-size:11px"><span style="color:var(--text3)">BOD</span> <span style="font-family:'DM Mono';color:${bodOk?'var(--green-light)':'var(--red)'}">${e.bod}</span></div>`:''}
+          ${e.cod?`<div style="font-size:11px"><span style="color:var(--text3)">COD</span> <span style="font-family:'DM Mono';color:${codOk?'var(--green-light)':'var(--red)'}">${e.cod}</span></div>`:''}
+          ${e.tss?`<div style="font-size:11px"><span style="color:var(--text3)">TSS</span> <span style="font-family:'DM Mono'">${e.tss}</span></div>`:''}
+          ${e.tds?`<div style="font-size:11px"><span style="color:var(--text3)">TDS</span> <span style="font-family:'DM Mono'">${e.tds}</span></div>`:''}
+        </div>
+        ${e.remarks?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${e.remarks}</div>`:''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('logbook-entries').innerHTML = html;
+}
+
+function openLogEntryModal(){
+  const cid = document.getElementById('logbook-client-select').value;
+  if(!cid){ alert('Please select a client first'); return; }
+  const now = new Date();
+  document.getElementById('log-month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  openModal('log-entry-modal');
+}
+
+function saveLogEntry(){
+  const cid = document.getElementById('logbook-client-select').value;
+  if(!cid) return;
+  const entry = {
+    month: document.getElementById('log-month').value,
+    ph: parseFloat(document.getElementById('log-ph').value)||null,
+    bod: parseFloat(document.getElementById('log-bod').value)||null,
+    cod: parseFloat(document.getElementById('log-cod').value)||null,
+    tss: parseFloat(document.getElementById('log-tss').value)||null,
+    tds: parseFloat(document.getElementById('log-tds').value)||null,
+    remarks: document.getElementById('log-remarks').value.trim(),
+    created: Date.now()
+  };
+  if(!logEntries[cid]) logEntries[cid]=[];
+  logEntries[cid].push(entry);
+  const c = clients.find(x=>x.id===cid);
+  addActivity(`ETP reading added for ${c?.name||'client'} — ${entry.month}`,'success');
+  saveData();
+  closeModal('log-entry-modal');
+  renderLogbook();
+}
+
+// ─── DOCUMENTS ───────────────────────────────────────────────────
+function renderDocumentSelects(){
+  populateSelect('doc-client-select');
+  renderDocuments();
+}
+
+function renderDocuments(){
+  const cid = document.getElementById('doc-client-select').value;
+  const docs = cid ? (documents[cid]||[]) : [];
+
+  if(!cid){
+    document.getElementById('doc-list').innerHTML = '<div class="empty"><i class="fa-solid fa-folder-open"></i><p>Select a client to view their documents</p></div>';
+  } else if(!docs.length){
+    document.getElementById('doc-list').innerHTML = '<div class="empty"><i class="fa-solid fa-file-circle-plus"></i><p>No documents added yet</p></div>';
+  } else {
+    document.getElementById('doc-list').innerHTML = [...docs].reverse().map(d=>`
+      <div class="doc-item">
+        <div class="doc-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div style="flex:1">
+          <div class="doc-name">${d.name}</div>
+          <div class="doc-date">${d.type} &bull; ${fmtDate(d.date)}</div>
+          ${d.notes?`<div style="font-size:11px;color:var(--text3)">${d.notes}</div>`:''}
+        </div>
+        <span class="badge badge-gray">${d.type.split(' ')[0]}</span>
+      </div>`).join('');
+  }
+
+  // Checklist
+  const required = [
+    'Compliance Report of NOC / Consent Conditions',
+    'ETP Completion Certificate + Dimensional Drawing',
+    'Coloured Site Plan (water channels)',
+    'CA Certificate (Fixed Assets)',
+    'Lab Test Report from PPCB-Approved Lab',
+    'Proof of Industry Commissioning',
+    'Manufacturing Process Flow Chart',
+    'Previous CTO Certificate (if renewal)',
+    'Allotment Letter / Site Designation',
+    'Show Cause Notice Reply (if any)',
+  ];
+  const uploaded = docs.map(d=>d.type);
+  document.getElementById('doc-checklist').innerHTML = required.map(r=>{
+    const done = uploaded.some(u=>u.toLowerCase().includes(r.split(' ')[0].toLowerCase()));
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <i class="fa-solid ${done?'fa-circle-check':'fa-circle'}" style="color:${done?'var(--green-light)':'var(--border2)'}"></i>
+      <span style="color:${done?'var(--text)':'var(--text2)'}">${r}</span>
+    </div>`;
+  }).join('');
+}
+
+function openDocModal(){
+  const cid = document.getElementById('doc-client-select').value;
+  if(!cid){ alert('Please select a client first'); return; }
+  document.getElementById('doc-date-input').value = new Date().toISOString().split('T')[0];
+  openModal('doc-modal');
+}
+
+function saveDocument(){
+  const cid = document.getElementById('doc-client-select').value;
+  if(!cid) return;
+  const name = document.getElementById('doc-name-input').value.trim();
+  if(!name){ alert('Document name required'); return; }
+  if(!documents[cid]) documents[cid]=[];
+  documents[cid].push({
+    name,
+    type: document.getElementById('doc-type-input').value,
+    date: document.getElementById('doc-date-input').value,
+    notes: document.getElementById('doc-notes-input').value.trim(),
+    created: Date.now()
+  });
+  const c = clients.find(x=>x.id===cid);
+  addActivity(`Document added for ${c?.name||'client'}: ${name}`,'info');
+  saveData();
+  closeModal('doc-modal');
+  document.getElementById('doc-name-input').value='';
+  document.getElementById('doc-notes-input').value='';
+  renderDocuments();
+}
+
+// ─── REMINDERS ───────────────────────────────────────────────────
+function renderReminders(){
+  populateSelect('wa-client-select','Choose client...');
+  const withExpiry = clients.filter(c=>c.expiry).map(c=>({...c,d:daysUntil(c.expiry)}));
+  const reminders = [
+    ...withExpiry.filter(c=>c.d>=0&&c.d<=30).map(c=>({...c,type:'critical',msg:`CTO expires in ${c.d} days — renew NOW`})),
+    ...withExpiry.filter(c=>c.d>30&&c.d<=60).map(c=>({...c,type:'warning',msg:`CTO expires in ${c.d} days — start renewal process`})),
+    ...withExpiry.filter(c=>c.d>60&&c.d<=90).map(c=>({...c,type:'info',msg:`CTO expires in ${c.d} days — plan ahead`})),
+    ...clients.filter(c=>c.status==='rejected').map(c=>({...c,type:'critical',msg:'Application rejected — immediate action needed'})),
+    ...clients.filter(c=>c.status==='pending').map(c=>({...c,type:'warning',msg:'Application pending — follow up with PPCB'})),
+  ];
+  if(!reminders.length){
+    document.getElementById('reminders-list').innerHTML = '<div class="empty"><i class="fa-solid fa-bell-slash"></i><p>No active reminders</p></div>';
+    return;
+  }
+  const typeColor = {critical:'var(--red)',warning:'var(--amber)',info:'var(--blue)'};
+  document.getElementById('reminders-list').innerHTML = reminders.map(r=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <i class="fa-solid fa-circle" style="font-size:8px;color:${typeColor[r.type]};flex-shrink:0"></i>
+      <div style="flex:1">
+        <div style="font-weight:500;font-size:13px">${r.name}</div>
+        <div style="font-size:12px;color:${typeColor[r.type]}">${r.msg}</div>
+      </div>
+      ${catBadge(r.cat)}
+      ${r.phone?`<button class="btn btn-surface btn-sm" onclick="openWhatsApp('${r.id}')"><i class="fa-brands fa-whatsapp"></i></button>`:''}
+    </div>`).join('');
+}
+
+function sendWhatsApp(){
+  const cid = document.getElementById('wa-client-select').value;
+  const type = document.getElementById('wa-type').value;
+  if(!cid){ alert('Please select a client'); return; }
+  const c = clients.find(x=>x.id===cid);
+  if(!c||!c.phone){ alert('No phone number saved for this client. Edit the client to add a phone number.'); return; }
+  const phone = c.phone.replace(/[^0-9]/g,'');
+  const templates = {
+    'CTO Renewal Due in 30 Days': `Dear ${c.owner||'Sir/Madam'}, your PPCB Consent to Operate (CTO) for ${c.name} expires on ${fmtDate(c.expiry)} — only 30 days remaining. Please contact GreenBridge Consultants immediately to begin the renewal process. Delay can result in PPCB penalties. Call us: +91-7814818513`,
+    'CTO Renewal Due in 60 Days': `Dear ${c.owner||'Sir/Madam'}, this is a reminder from GreenBridge Consultants. Your PPCB CTO for ${c.name} expires on ${fmtDate(c.expiry)}. Please reach out so we can begin the renewal process well before the deadline. Call: +91-7814818513`,
+    'Monthly ETP Records Due': `Dear ${c.owner||'Sir/Madam'}, please ensure your ETP monthly records are updated for ${new Date().toLocaleString('en-IN',{month:'long'})}. This includes pH, BOD, COD readings and operator log. GreenBridge Consultants — +91-7814818513`,
+    'PPCB Inspection Scheduled': `Dear ${c.owner||'Sir/Madam'}, your PPCB inspection has been scheduled for ${c.name}. Please ensure your ETP is fully operational, all records are updated, and documents are ready. GreenBridge Consultants will assist. Call: +91-7814818513`,
+    'Document Submission Pending': `Dear ${c.owner||'Sir/Madam'}, your PPCB application for ${c.name} has pending documents that need to be submitted. Please contact GreenBridge Consultants immediately to avoid rejection. Call: +91-7814818513`,
+  };
+  const msg = templates[type] || type;
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  addActivity(`WhatsApp reminder sent to ${c.name}`, 'info');
+  saveData();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+loadData();
+renderDashboard();
+renderClients();
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id); });
+});
+</script>
+</body>
+</html>
